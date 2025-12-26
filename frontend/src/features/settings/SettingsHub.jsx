@@ -21,6 +21,8 @@ import IntegrationsSetup from '../integrations/IntegrationsSetup';
 import AuditExport from '../audit/AuditExport';
 import UsageAnalytics from '../analytics/UsageAnalytics';
 import PolicyTemplates from '../policies/PolicyTemplates';
+import ProfilePictureUpload from '../../components/ProfilePictureUpload';
+import { getCurrentUserProfile } from '../../services/profileService';
 
 function SectionCard({ active, onClick, icon: Icon, title, desc, badge }) {
   return (
@@ -269,6 +271,25 @@ export default function SettingsHub({ currentUser }) {
 
           {active === 'profile' && (
             <div className="card p-6 max-w-2xl">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Profile Picture</h3>
+                <ProfilePictureUpload
+                  userId={currentUser?.id}
+                  currentPic={currentUser?.profile_pic}
+                  onUpload={(newPic) => {
+                    // Update currentUser with new profile picture
+                    currentUser.profile_pic = newPic;
+                    // Force re-render
+                    setActive(active);
+                  }}
+                  onDelete={() => {
+                    // Remove profile picture from currentUser
+                    currentUser.profile_pic = null;
+                    // Force re-render
+                    setActive(active);
+                  }}
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Full name">
                   <input

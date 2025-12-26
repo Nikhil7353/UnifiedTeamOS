@@ -16,6 +16,7 @@ from routers.inbox import router as inbox_router
 from routers.projects import router as projects_router
 from routers.settings import router as settings_router
 from routers.analytics import router as analytics_router
+from routers.profile import router as profile_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -50,6 +51,7 @@ app.include_router(inbox.router)
 app.include_router(projects.router)
 app.include_router(settings.router)
 app.include_router(analytics_router)
+app.include_router(profile.router)
 
 
 @app.get("/")

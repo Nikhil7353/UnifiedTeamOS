@@ -12,6 +12,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     password = Column(String)
+    profile_pic = Column(String, nullable=True)  # Store profile picture path
 
     tasks = relationship("Task", back_populates="assigned_user", cascade="all, delete")
     messages = relationship("Message", back_populates="sender", cascade="all, delete")

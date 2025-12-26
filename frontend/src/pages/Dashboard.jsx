@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser, isAuthenticated } from '../services/authService';
+import { getProfilePictureUrl } from '../services/profileService';
 import api from '../services/api';
 import { unifiedSearch } from '../services/searchService';
 import { getOverviewStats } from '../services/analyticsService';
@@ -409,10 +410,26 @@ export default function Dashboard() {
             <div className="flex items-start gap-3">
               <button
                 onClick={() => setActiveTab('settings')}
-                className="w-10 h-10 rounded-xl bg-gradient-secondary flex items-center justify-center text-white font-semibold shrink-0"
+                className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-secondary flex items-center justify-center text-white font-semibold shrink-0"
                 title="Open settings"
               >
-                {(user.username || 'U').slice(0, 1).toUpperCase()}
+                {user.profile_pic ? (
+                  <img
+                    src={getProfilePictureUrl(user.id)}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div
+                  style={{ display: user.profile_pic ? 'none' : 'flex' }}
+                  className="w-full h-full items-center justify-center"
+                >
+                  {(user.username || 'U').slice(0, 1).toUpperCase()}
+                </div>
               </button>
 
               <div className="flex-1 min-w-0">

@@ -11,6 +11,7 @@ class UserCreate(BaseModel):
     username: str
     email: str
     password: str
+    profile_pic: Optional[str] = None
 
 
 class UserLogin(BaseModel):
@@ -22,6 +23,7 @@ class UserOut(BaseModel):
     id: int
     username: str
     email: str
+    profile_pic: Optional[str] = None
 
     class Config:
         from_attributes = True
