@@ -29,6 +29,12 @@ class UserOut(BaseModel):
         from_attributes = True
 
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    profile_pic: Optional[str] = None
+
+
 # --------
 # Tasks
 # --------
@@ -485,3 +491,63 @@ class SearchResults(BaseModel):
     messages: List[MessageOut]
     documents: List[DocumentOut]
     emails: List[EmailMessageOut]
+
+
+# --------
+# Projects
+# --------
+class ProjectBase(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    status: Optional[str] = "active"
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+
+
+class ProjectOut(ProjectBase):
+    id: int
+    owner_id: int
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+# --------
+# Project Cards
+# --------
+class ProjectCardBase(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    status: Optional[str] = "todo"  # todo, in_progress, done
+    priority: Optional[str] = "medium"  # low, medium, high
+
+
+class ProjectCardCreate(ProjectCardBase):
+    project_id: int
+
+
+class ProjectCardUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[str] = None
+    priority: Optional[str] = None
+
+
+class ProjectCardOut(ProjectCardBase):
+    id: int
+    project_id: int
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True

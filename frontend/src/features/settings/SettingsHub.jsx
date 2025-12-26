@@ -14,6 +14,8 @@ import {
   ChevronRight,
   ExternalLink,
   Save,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 import BillingPlans from '../billing/BillingPlans';
 import SSOSetup from '../sso/SSOSetup';
@@ -23,6 +25,7 @@ import UsageAnalytics from '../analytics/UsageAnalytics';
 import PolicyTemplates from '../policies/PolicyTemplates';
 import ProfilePictureUpload from '../../components/ProfilePictureUpload';
 import { getCurrentUserProfile } from '../../services/profileService';
+import { updateUserProfile } from '../../services/userService';
 
 function SectionCard({ active, onClick, icon: Icon, title, desc, badge }) {
   return (
@@ -88,10 +91,12 @@ export default function SettingsHub({ currentUser }) {
   const [active, setActive] = useState('home');
 
   const [profile, setProfile] = useState({
-    fullName: currentUser?.full_name || 'Nikhil',
-    username: currentUser?.username || 'nikhil',
-    email: currentUser?.email || 'nikhil@company.com',
+    username: currentUser?.username || '',
+    email: currentUser?.email || '',
   });
+
+  const [saveStatus, setSaveStatus] = useState(''); // 'saving', 'saved', 'error'
+  const [saveMessage, setSaveMessage] = useState('');
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -108,6 +113,34 @@ export default function SettingsHub({ currentUser }) {
     mfaRequired: false,
     sessionTimeout: '30',
   });
+
+  const saveProfile = async () => {
+    setSaveStatus('saving');
+    setSaveMessage('');
+    
+    try {
+      await updateUserProfile({
+        username: profile.username,
+        email: profile.email,
+      });
+      
+      setSaveStatus('saved');
+      setSaveMessage('Profile updated successfully');
+      
+      // Update currentUser with new values
+      currentUser.username = profile.username;
+      currentUser.email = profile.email;
+      
+      // Clear status after 3 seconds
+      setTimeout(() => {
+        setSaveStatus('');
+        setSaveMessage('');
+      }, 3000);
+    } catch (error) {
+      setSaveStatus('error');
+      setSaveMessage(error.response?.data?.detail || 'Failed to update profile');
+    }
+  };
 
   const sections = useMemo(
     () => [
@@ -291,13 +324,6 @@ export default function SettingsHub({ currentUser }) {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Full name">
-                  <input
-                    value={profile.fullName}
-                    onChange={(e) => setProfile((p) => ({ ...p, fullName: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-xl border border-secondary-200 dark:border-secondary-700 bg-white dark:bg-secondary-800 text-secondary-900 dark:text-white"
-                  />
-                </Field>
                 <Field label="Username">
                   <input
                     value={profile.username}
@@ -320,7 +346,37 @@ export default function SettingsHub({ currentUser }) {
                   </select>
                 </Field>
               </div>
-              <div className="mt-6 text-xs text-secondary-500 dark:text-secondary-400">UI-only: profile persistence will be backed by API later.</div>
+              
+              {/* Save button and status */}
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  onClick={saveProfile}
+                  disabled={saveStatus === 'saving'}
+                  className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-primary-300 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {saveStatus === 'saving' ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      Save Changes
+                    </>
+                  )}
+                </button>
+                
+                {saveStatus && (
+                  <div className={`flex items-center gap-2 text-sm ${
+                    saveStatus === 'saved' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {saveStatus === 'saved' && <CheckCircle className="w-4 h-4" />}
+                    {saveStatus === 'error' && <AlertCircle className="w-4 h-4" />}
+                    {saveMessage}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

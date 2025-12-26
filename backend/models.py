@@ -26,6 +26,7 @@ class User(Base):
     voice_room_participations = relationship("VoiceRoomParticipant", back_populates="user", cascade="all, delete")
     video_call_participations = relationship("VideoCallParticipant", back_populates="user", cascade="all, delete")
     whiteboard_strokes = relationship("WhiteboardStroke", back_populates="author", cascade="all, delete")
+    projects = relationship("Project", back_populates="owner", cascade="all, delete")
 
 
 class Task(Base):
@@ -304,3 +305,33 @@ class WhiteboardStroke(Base):
 
     board = relationship("WhiteboardBoard", back_populates="strokes")
     author = relationship("User", back_populates="whiteboard_strokes")
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, default="")
+    status = Column(String, default="active")  # active, completed, archived
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    owner = relationship("User", back_populates="projects")
+    cards = relationship("ProjectCard", back_populates="project", cascade="all, delete")
+
+
+class ProjectCard(Base):
+    __tablename__ = "project_cards"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, default="")
+    status = Column(String, default="todo")  # todo, in_progress, done
+    priority = Column(String, default="medium")  # low, medium, high
+    project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    project = relationship("Project", back_populates="cards")

@@ -17,6 +17,7 @@ from routers.projects import router as projects_router
 from routers.settings import router as settings_router
 from routers.analytics import router as analytics_router
 from routers.profile import router as profile_router
+from routers.users import router as users_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -47,11 +48,12 @@ app.include_router(voice_router)
 app.include_router(video_router)
 app.include_router(whiteboard_router)
 app.include_router(search_router)
-app.include_router(inbox.router)
-app.include_router(projects.router)
-app.include_router(settings.router)
+app.include_router(inbox_router)
+app.include_router(projects_router)
+app.include_router(settings_router)
 app.include_router(analytics_router)
-app.include_router(profile.router)
+app.include_router(profile_router)
+app.include_router(users_router)
 
 
 @app.get("/")
