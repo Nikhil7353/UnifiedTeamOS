@@ -4,7 +4,7 @@ export const uploadProfilePicture = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   
-  const response = await api.post('/api/profile/upload-picture', formData, {
+  const response = await api.post('/profile/upload-picture', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -13,15 +13,15 @@ export const uploadProfilePicture = async (file) => {
 };
 
 export const getProfilePictureUrl = (userId) => {
-  return `/api/profile/picture/${userId}`;
+  return `/profile/picture/${userId}`;
 };
 
 export const deleteProfilePicture = async () => {
-  const response = await api.delete('/api/profile/picture');
+  const response = await api.delete('/profile/picture');
   return response.data;
 };
 
 export const getCurrentUserProfile = async () => {
-  const response = await api.get('/api/profile/me');
+  const response = await api.get('/profile/me');
   return response.data;
 };
