@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser, isAuthenticated } from '../services/authService';
 import api from '../services/api';
 import { unifiedSearch } from '../services/searchService';
+import { getOverviewStats } from '../services/analyticsService';
 import ChatWindow from '../features/chat/ChatWindow';
 import TaskBoard from '../features/tasks/TaskBoard';
 import IntelligentWorkspace from '../features/workspace/IntelligentWorkspace';
@@ -81,6 +82,8 @@ export default function Dashboard() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [channels, setChannels] = useState([]);
   const [activeChannel, setActiveChannel] = useState(null);
+  const [overviewStats, setOverviewStats] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     const q = searchQuery.trim();
@@ -119,26 +122,11 @@ export default function Dashboard() {
     );
   }, [searchResults]);
 
-  // Dashboard UI data (mocked for UI polish)
-  const overviewStats = [
-    { title: 'Open Tasks', value: '18', trend: '+3 this week', icon: ClipboardList, color: 'from-primary-500 to-primary-600' },
-    { title: 'Unread Messages', value: '42', trend: '5 new today', icon: Inbox, color: 'from-secondary-500 to-secondary-700' },
-    { title: 'Files Shared', value: '12', trend: '2 new uploads', icon: UploadCloud, color: 'from-accent-500 to-accent-600' },
-    { title: 'Security', value: 'Healthy', trend: 'RBAC enabled', icon: ShieldCheck, color: 'from-success-500 to-success-600' },
-  ];
-
   const quickActions = [
     { label: 'New Task', icon: CheckSquare, action: () => setActiveTab('tasks') },
     { label: 'New Channel', icon: FolderPlus, action: () => createChannelPrompt() },
     { label: 'Start Standup', icon: PlayCircle, action: () => setActiveTab('chats') },
     { label: 'Run AI Summary', icon: Brain, action: () => setActiveTab('workspace') },
-  ];
-
-  const recentActivity = [
-    { id: 1, type: 'task', title: 'Homepage layout updated', time: '10m ago', icon: Activity },
-    { id: 2, type: 'message', title: 'You were mentioned in #design', time: '35m ago', icon: MessageCircle },
-    { id: 3, type: 'file', title: 'Product roadmap.pdf uploaded', time: '1h ago', icon: UploadCloud },
-    { id: 4, type: 'security', title: 'RBAC roles updated', time: '3h ago', icon: ShieldCheck },
   ];
 
   useEffect(() => {
@@ -148,6 +136,7 @@ export default function Dashboard() {
     } else {
       setUser(getCurrentUser());
       loadChannels();
+      loadOverviewStats();
     }
 
     // Check for saved dark mode preference
@@ -157,6 +146,16 @@ export default function Dashboard() {
       document.documentElement.classList.add('dark');
     }
   }, [navigate]);
+
+  const loadOverviewStats = async () => {
+    try {
+      const data = await getOverviewStats();
+      setOverviewStats(data.overview_stats || []);
+      setRecentActivity(data.recent_activity || []);
+    } catch (error) {
+      console.error('Failed to load overview stats:', error);
+    }
+  };
 
   const loadChannels = async () => {
     try {
@@ -758,7 +757,16 @@ export default function Dashboard() {
                     </div>
                     <div className="space-y-3">
                       {recentActivity.map((item) => {
-                        const Icon = item.icon;
+                        const getIcon = (type) => {
+                          switch(type) {
+                            case 'task': return CheckSquare;
+                            case 'message': return MessageCircle;
+                            case 'file': return UploadCloud;
+                            case 'security': return ShieldCheck;
+                            default: return Activity;
+                          }
+                        };
+                        const Icon = getIcon(item.type);
                         return (
                           <div key={item.id} className="flex items-start gap-3">
                             <div className="w-9 h-9 rounded-lg bg-secondary-100 dark:bg-secondary-700 flex items-center justify-center text-secondary-700 dark:text-secondary-200">

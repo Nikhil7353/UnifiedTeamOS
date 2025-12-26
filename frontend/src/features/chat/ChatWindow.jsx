@@ -49,7 +49,10 @@ export default function ChatWindow({ currentUser, activeChannel }) {
   };
 
   const connectWebSocket = () => {
-    const socket = new SockJS('http://localhost:8000/ws');
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    
+    const socket = new SockJS(`http://localhost:8000/ws/chat/${activeChannel.id}?token=${token}`);
     const client = Stomp.over(socket);
 
     // Disable debug logs
@@ -57,11 +60,9 @@ export default function ChatWindow({ currentUser, activeChannel }) {
 
     client.connect({}, () => {
       setIsConnected(true);
-      client.subscribe('/topic/public', (payload) => {
+      client.subscribe('/topic/messages', (payload) => {
         const newMessage = JSON.parse(payload.body);
-        if (newMessage.channel_id === activeChannel?.id) {
-          setMessages((prev) => [...prev, newMessage]);
-        }
+        setMessages((prev) => [...prev, newMessage]);
       });
     }, (err) => {
       console.error("WebSocket Error:", err);
