@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from database import engine, Base
 from routers import auth, tasks, chat, channels, notifications
 from routers.ws_notifications import router as ws_notifications_router
+from routers.ws_chat import router as ws_chat_router
 from routers.email import router as email_router
 from routers.docs import router as docs_router
 from routers.voice import router as voice_router
@@ -12,6 +13,9 @@ from routers.video import router as video_router
 from routers.whiteboard import router as whiteboard_router
 from routers.search import router as search_router
 from routers.inbox import router as inbox_router
+from routers.projects import router as projects_router
+from routers.settings import router as settings_router
+from routers.analytics import router as analytics_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -35,13 +39,17 @@ app.include_router(chat.router)
 app.include_router(channels.router)
 app.include_router(notifications.router)
 app.include_router(ws_notifications_router)
+app.include_router(ws_chat_router)
 app.include_router(email_router)
 app.include_router(docs_router)
 app.include_router(voice_router)
 app.include_router(video_router)
 app.include_router(whiteboard_router)
 app.include_router(search_router)
-app.include_router(inbox_router)
+app.include_router(inbox.router)
+app.include_router(projects.router)
+app.include_router(settings.router)
+app.include_router(analytics_router)
 
 
 @app.get("/")

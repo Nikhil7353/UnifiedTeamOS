@@ -43,3 +43,39 @@ def update_task_status(
     db.commit()
     db.refresh(task)
     return task
+
+
+@router.put("/{task_id}", response_model=schemas.TaskOut)
+def update_task(
+    task_id: int,
+    task_update: schemas.TaskCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    task.title = task_update.title
+    task.description = task_update.description or ""
+    if task_update.status:
+        task.status = task_update.status
+    
+    db.commit()
+    db.refresh(task)
+    return task
+
+
+@router.delete("/{task_id}")
+def delete_task(
+    task_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    db.delete(task)
+    db.commit()
+    return {"deleted": True}

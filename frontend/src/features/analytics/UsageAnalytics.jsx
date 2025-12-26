@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -11,6 +11,7 @@ import {
   Calendar,
   Filter,
 } from 'lucide-react';
+import { getUsageAnalytics } from '../../services/analyticsService';
 
 function Pill({ children, tone = 'neutral' }) {
   const cls =
@@ -86,28 +87,41 @@ function Sparkline({ points }) {
 export default function UsageAnalytics() {
   const [range, setRange] = useState('7d');
   const [segment, setSegment] = useState('all');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const data = useMemo(() => {
-    // UI-only mocked metrics
-    return {
-      activeUsers: range === '30d' ? 48 : 21,
-      messages: range === '30d' ? 18240 : 4890,
-      emails: range === '30d' ? 0 : 0,
-      docs: range === '30d' ? 64 : 18,
-      uploadsGb: range === '30d' ? 24 : 6,
-      securityScore: 'Healthy',
-      usage: {
-        messages: { used: range === '30d' ? 18240 : 4890, limit: 50000 },
-        docs: { used: range === '30d' ? 64 : 18, limit: 500 },
-        storage: { used: range === '30d' ? 24 : 6, limit: 100 },
-      },
-      sparklines: {
-        messages: range === '30d' ? [220, 260, 300, 280, 340, 410, 390, 420, 460, 440, 480, 520] : [40, 55, 62, 58, 70, 84, 79],
-        docs: range === '30d' ? [2, 4, 3, 6, 7, 9, 11, 10, 12, 14, 13, 15] : [1, 2, 3, 2, 4, 3, 5],
-        uploads: range === '30d' ? [0.3, 0.6, 0.8, 0.7, 1.2, 1.1, 1.4, 1.3, 1.6, 1.8, 1.7, 2.0] : [0.1, 0.2, 0.3, 0.25, 0.4, 0.35, 0.5],
-      },
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      try {
+        setLoading(true);
+        const analyticsData = await getUsageAnalytics(range, segment);
+        setData(analyticsData);
+      } catch (error) {
+        console.error('Failed to load analytics:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [range]);
+
+    loadAnalytics();
+  }, [range, segment]);
+
+  if (loading || !data) {
+    return (
+      <div className="space-y-4">
+        <div className="card p-6">
+          <div className="animate-pulse">
+            <div className="h-4 bg-secondary-200 rounded w-1/4 mb-4"></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-20 bg-secondary-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -119,7 +133,7 @@ export default function UsageAnalytics() {
             </div>
             <div>
               <div className="text-lg font-bold text-secondary-900 dark:text-white">Usage analytics</div>
-              <div className="text-sm text-secondary-600 dark:text-secondary-300">UI-only metrics dashboard (backend telemetry later)</div>
+              <div className="text-sm text-secondary-600 dark:text-secondary-300">Real-time metrics and usage statistics</div>
             </div>
           </div>
 
@@ -183,10 +197,7 @@ export default function UsageAnalytics() {
             <TrendCard title="Uploads" icon={UploadCloud} points={data.sparklines.uploads} />
           </div>
 
-          <div className="mt-5 text-xs text-secondary-500 dark:text-secondary-400">
-            UI-only: these charts will be populated from backend analytics/events later.
           </div>
-        </div>
       </div>
 
       <div className="card p-6">
@@ -200,9 +211,9 @@ export default function UsageAnalytics() {
           </Pill>
         </div>
         <div className="mt-3 text-sm text-secondary-600 dark:text-secondary-300">
-          Metrics are mocked for the UI demo. When backend is ready, we can track events (messages sent, docs edited, files uploaded) and show per-team / per-channel breakdowns.
+          Real-time analytics tracking user activity, messages, documents, and system usage across your team workspace.
         </div>
-        <div className="mt-4 text-xs text-secondary-500 dark:text-secondary-400">Current segment filter is UI-only: {segment}</div>
+        <div className="mt-4 text-xs text-secondary-500 dark:text-secondary-400">Analytics updated in real-time</div>
       </div>
     </div>
   );
